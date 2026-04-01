@@ -2,6 +2,9 @@
 
 **Cloudflare-Native Architecture** — Workers · D1 · KV · Queues · Pages
 
+<!-- CI/CD Status -->
+![Deploy Application](https://github.com/Reshigan/gonxt-odoo-analytics/actions/workflows/deploy.yml/badge.svg)
+
 ## Architecture
 
 ```
