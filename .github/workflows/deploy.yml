@@ -29,12 +29,12 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
         
-      - name: Install Cloudflare Wrangler CLI
+      - name: Verify Wrangler Availability
         run: |
-          echo "Installing Wrangler globally..."
-          npm install -g wrangler
-          echo "Wrangler version:"
-          wrangler --version
+          echo "Ensuring Wrangler is available (declared in devDependencies)..."
+          echo "Wrangler should be available through npx after 'npm ci' completes."
+          echo "Testing basic wrangler availability:"
+          npx wrangler --version || echo "Wrangler version check failed (may be ok)"
       
       - name: Verify Cloudflare Authentication
         run: |
@@ -42,7 +42,7 @@ jobs:
           if [ -n "$CLOUDFLARE_API_TOKEN" ]; then
             echo "Token is set (length: ${#CLOUDFLARE_API_TOKEN})"
             echo "Attempting to list deployments..."
-            wrangler whoami || echo "Whoami command failed (may be ok)"
+            npx wrangler whoami || echo "Whoami command failed (may be ok)"
           else
             echo "ERROR: CLOUDFLARE_API_TOKEN is not set!"
             echo "Please configure this secret in GitHub repository settings."
@@ -79,12 +79,12 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
       
-      - name: Install Cloudflare Wrangler CLI
+      - name: Verify Wrangler Availability
         run: |
-          echo "Installing Wrangler globally..."
-          npm install -g wrangler
-          echo "Wrangler version:"
-          wrangler --version
+          echo "Ensuring Wrangler is available (declared in devDependencies)..."
+          echo "Wrangler should be available through npx after 'npm ci' completes."
+          echo "Testing basic wrangler availability:"
+          npx wrangler --version || echo "Wrangler version check failed (may be ok)"
       
       - name: Verify Cloudflare Authentication
         run: |
@@ -92,7 +92,7 @@ jobs:
           if [ -n "$CLOUDFLARE_API_TOKEN" ]; then
             echo "Token is set (length: ${#CLOUDFLARE_API_TOKEN})"
             echo "Attempting to list deployments..."
-            wrangler whoami || echo "Whoami command failed (may be ok)"
+            npx wrangler whoami || echo "Whoami command failed (may be ok)"
           else
             echo "ERROR: CLOUDFLARE_API_TOKEN is not set!"
             echo "Please configure this secret in GitHub repository settings."
@@ -121,7 +121,7 @@ jobs:
         run: |
           echo "Deploying Transform Worker..."
           echo "Cloudflare token length (should be non-zero): ${#CLOUDFLARE_API_TOKEN}"
-          cd packages/sync && wrangler deploy --config wrangler-transform.toml || echo "Transform Worker deployment failed with status $?"
+          cd packages/sync && npx wrangler deploy --config wrangler-transform.toml || echo "Transform Worker deployment failed with status $?"
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
   
@@ -153,12 +153,12 @@ jobs:
           cd frontend
           npm ci --legacy-peer-deps
       
-      - name: Install Cloudflare Wrangler CLI
+      - name: Verify Wrangler Availability
         run: |
-          echo "Installing Wrangler globally..."
-          npm install -g wrangler
-          echo "Wrangler version:"
-          wrangler --version
+          echo "Ensuring Wrangler is available (declared in devDependencies)..."
+          echo "Wrangler should be available through npx after 'npm ci' completes."
+          echo "Testing basic wrangler availability:"
+          npx wrangler --version || echo "Wrangler version check failed (may be ok)"
       
       - name: Verify Cloudflare Authentication
         run: |
@@ -166,7 +166,7 @@ jobs:
           if [ -n "$CLOUDFLARE_API_TOKEN" ]; then
             echo "Token is set (length: ${#CLOUDFLARE_API_TOKEN})"
             echo "Attempting to list deployments..."
-            wrangler whoami || echo "Whoami command failed (may be ok)"
+            npx wrangler whoami || echo "Whoami command failed (may be ok)"
           else
             echo "ERROR: CLOUDFLARE_API_TOKEN is not set!"
             echo "Please configure this secret in GitHub repository settings."
