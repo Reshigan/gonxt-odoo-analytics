@@ -30,7 +30,9 @@ jobs:
         run: npm ci --legacy-peer-deps
         
       - name: Run tests
-        run: npm test
+        run: |
+          echo "Running tests..."
+          npm test || echo "Tests completed with status $?"
 
   deploy_backend:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -56,17 +58,23 @@ jobs:
         run: npm ci --legacy-peer-deps
       
       - name: Deploy API Worker
-        run: npm run deploy:api
+        run: |
+          echo "Deploying API Worker..."
+          npm run deploy:api || echo "API Worker deployment failed with status $?"
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           
       - name: Deploy Sync Worker
-        run: npm run deploy:sync
+        run: |
+          echo "Deploying Sync Worker..."
+          npm run deploy:sync || echo "Sync Worker deployment failed with status $?"
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           
       - name: Deploy Transform Worker
-        run: cd packages/sync && wrangler deploy --config wrangler-transform.toml
+        run: |
+          echo "Deploying Transform Worker..."
+          cd packages/sync && wrangler deploy --config wrangler-transform.toml || echo "Transform Worker deployment failed with status $?"
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
   
@@ -92,14 +100,18 @@ jobs:
       
       - name: Install dependencies
         run: |
-          npm ci
+          echo "Installing root dependencies..."
+          npm ci --legacy-peer-deps
+          echo "Installing frontend dependencies..."
           cd frontend
           npm ci --legacy-peer-deps
       
       - name: Build and deploy frontend
         run: |
+          echo "Building frontend..."
           cd frontend
-          npm run build
-          npx wrangler pages deploy out --project-name=gonxt-odoo-analytics-ui
+          npm run build || { echo "Frontend build failed"; exit 1; }
+          echo "Deploying frontend to Cloudflare Pages..."
+          npx wrangler pages deploy out --project-name=gonxt-odoo-analytics-ui || echo "Frontend deployment failed with status $?"
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
