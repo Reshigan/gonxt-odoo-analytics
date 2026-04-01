@@ -21,6 +21,7 @@ const TEAM_COLORS = ['#00D4F5', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC
 
 export default function ExecutiveDashboard() {
   // Define companies data within the page
+  // Updated to include a comment about standalone deployment
   const companies = [
     { id: 1, name: 'GONXT Technology' },
     { id: 2, name: 'TerraVolt Energy' },
