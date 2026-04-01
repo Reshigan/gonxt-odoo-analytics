@@ -36,6 +36,21 @@ jobs:
           echo "Wrangler version:"
           wrangler --version
       
+      - name: Verify Cloudflare Authentication
+        run: |
+          echo "Verifying Cloudflare authentication..."
+          if [ -n "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "Token is set (length: ${#CLOUDFLARE_API_TOKEN})"
+            echo "Attempting to list deployments..."
+            wrangler whoami || echo "Whoami command failed (may be ok)"
+          else
+            echo "ERROR: CLOUDFLARE_API_TOKEN is not set!"
+            echo "Please configure this secret in GitHub repository settings."
+            exit 1
+          fi
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      
       - name: Run tests
         run: |
           echo "Running tests..."
@@ -70,6 +85,21 @@ jobs:
           npm install -g wrangler
           echo "Wrangler version:"
           wrangler --version
+      
+      - name: Verify Cloudflare Authentication
+        run: |
+          echo "Verifying Cloudflare authentication..."
+          if [ -n "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "Token is set (length: ${#CLOUDFLARE_API_TOKEN})"
+            echo "Attempting to list deployments..."
+            wrangler whoami || echo "Whoami command failed (may be ok)"
+          else
+            echo "ERROR: CLOUDFLARE_API_TOKEN is not set!"
+            echo "Please configure this secret in GitHub repository settings."
+            exit 1
+          fi
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       
       - name: Deploy API Worker
         run: |
@@ -129,6 +159,21 @@ jobs:
           npm install -g wrangler
           echo "Wrangler version:"
           wrangler --version
+      
+      - name: Verify Cloudflare Authentication
+        run: |
+          echo "Verifying Cloudflare authentication..."
+          if [ -n "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "Token is set (length: ${#CLOUDFLARE_API_TOKEN})"
+            echo "Attempting to list deployments..."
+            wrangler whoami || echo "Whoami command failed (may be ok)"
+          else
+            echo "ERROR: CLOUDFLARE_API_TOKEN is not set!"
+            echo "Please configure this secret in GitHub repository settings."
+            exit 1
+          fi
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       
       - name: Build and deploy frontend
         run: |
