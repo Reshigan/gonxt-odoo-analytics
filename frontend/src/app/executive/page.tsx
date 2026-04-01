@@ -19,11 +19,15 @@ const COLORS = ['#00D4F5', '#2DD4A8', '#ED8936', '#9F7AEA', '#F56565', '#63B3ED'
 const COMPANY_COLORS = ['#00D4F5', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
 const TEAM_COLORS = ['#00D4F5', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];
 
-interface Props {
-  companies: Array<{ id: number; name: string }>;
-}
+export default function ExecutiveDashboard() {
+  // Define companies data within the page
+  const companies = [
+    { id: 1, name: 'GONXT Technology' },
+    { id: 2, name: 'TerraVolt Energy' },
+    { id: 3, name: 'Fybatex Medical' },
+    { id: 4, name: 'Envera Capital' },
+  ];
 
-export default function ExecutiveDashboard({ companies }: Props) {
   const [dashboardData, setDashboardData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

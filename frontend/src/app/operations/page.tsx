@@ -17,11 +17,15 @@ import { executiveApi } from '../../lib/api-client';
 // Colors for charts
 const COLORS = ['#00D4F5', '#2DD4A8', '#ED8936', '#9F7AEA', '#F56565', '#63B3ED'];
 
-interface Props {
-  companies: Array<{ id: number; name: string }>;
-}
+export default function OperationsDashboard() {
+  // Define companies data within the page
+  const companies = [
+    { id: 1, name: 'GONXT Technology' },
+    { id: 2, name: 'TerraVolt Energy' },
+    { id: 3, name: 'Fybatex Medical' },
+    { id: 4, name: 'Envera Capital' },
+  ];
 
-export default function OperationsDashboard({ companies }: Props) {
   const [dailyData, setDailyData] = useState<any>(null);
   const [exceptionData, setExceptionData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
