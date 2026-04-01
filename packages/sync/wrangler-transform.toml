@@ -1,0 +1,18 @@
+name = "gonxt-analytics-transform"
+main = "src/transform-worker.ts"
+compatibility_date = "2024-06-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "gonxt-odoo-analytics"
+database_id = "e5c40fb1-49f4-456d-8f34-d5df60cde9f9"
+
+[[kv_namespaces]]
+binding = "CACHE"
+id = "5edac82b359d41e49b3ef07bedfab929"
+
+# Queue consumer — this worker consumes transform messages
+[[queues.consumers]]
+queue = "odoo-transform-queue"
+max_batch_size = 1
+max_retries = 2

@@ -1,0 +1,31 @@
+{
+  "name": "gonxt-odoo-analytics",
+  "version": "2.0.0",
+  "private": true,
+  "description": "GONXT Odoo 18 Executive Reporting & Analytics Platform — Cloudflare Native",
+  "workspaces": [
+    "packages/*",
+    "frontend"
+  ],
+  "scripts": {
+    "dev:api": "cd packages/api && wrangler dev",
+    "dev:sync": "cd packages/sync && wrangler dev",
+    "dev:frontend": "cd frontend && next dev",
+    "deploy:api": "cd packages/api && wrangler deploy",
+    "deploy:sync": "cd packages/sync && wrangler deploy",
+    "deploy:frontend": "cd frontend && npm run build && wrangler pages deploy out --project-name=gonxt-odoo-analytics-ui",
+    "db:migrate": "node scripts/migrate.js",
+    "db:seed": "node scripts/seed.js",
+    "test:odoo": "npx tsx scripts/test-odoo-connection.ts",
+    "test": "vitest"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240620.0",
+    "typescript": "^5.5.0",
+    "vitest": "^2.0.0",
+    "wrangler": "^3.114.17"
+  },
+  "dependencies": {
+    "hono": "^4.12.9"
+  }
+}

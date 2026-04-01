@@ -1,0 +1,25 @@
+name = "gonxt-analytics-api"
+main = "src/index.ts"
+compatibility_date = "2024-06-01"
+
+[vars]
+ODOO_URL = "https://erp.gonxt.tech"
+ODOO_DB = "gonxt"
+ODOO_USER = "analytics@gonxt.tech"
+
+# Secrets (set via: wrangler secret put ODOO_PASSWORD / JWT_SECRET)
+# ODOO_PASSWORD = "analytics1234#"
+# JWT_SECRET = "<generate-256-bit>"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "gonxt-odoo-analytics"
+database_id = "e5c40fb1-49f4-456d-8f34-d5df60cde9f9"
+
+[[kv_namespaces]]
+binding = "CACHE"
+id = "5edac82b359d41e49b3ef07bedfab929"
+
+[[routes]]
+pattern = "nxt.vantax.co.za/*"
+zone_id = "bf309894b764e179f0299ddcc266ca7a"
