@@ -31,6 +31,9 @@ export default function ExecutiveDashboard() {
   ];
 
   const [dashboardData, setDashboardData] = useState<any>(null);
+  const [financialData, setFinancialData] = useState<any>(null);
+  const [customerData, setCustomerData] = useState<any>(null);
+  const [productData, setProductData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,8 +42,21 @@ export default function ExecutiveDashboard() {
     const fetchDashboardData = async () => {
       try {
         setLoading(true);
-        const response = await executiveApi.dashboard();
-        setDashboardData(response.data);
+        // Fetch main dashboard data
+        const dashboardResponse = await executiveApi.dashboard();
+        setDashboardData(dashboardResponse.data);
+        
+        // Fetch financial performance data
+        const financialResponse = await executiveApi.financialPerformance({});
+        setFinancialData(financialResponse.data);
+        
+        // Fetch customer intelligence data
+        const customerResponse = await executiveApi.customerIntelligence({limit: 10});
+        setCustomerData(customerResponse.data);
+        
+        // Fetch product performance data
+        const productResponse = await executiveApi.productPerformance({limit: 10});
+        setProductData(productResponse.data);
       } catch (err: any) {
         setError(err.message || 'Failed to load executive dashboard data');
         console.error('Executive dashboard error:', err);
@@ -265,6 +281,148 @@ export default function ExecutiveDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Financial Performance Analysis */}
+      {financialData && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <ChartCard title="Quarterly Financial Performance" height={350}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={financialData.quarterly_performance}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+                <XAxis 
+                  dataKey="quarter" 
+                  tick={{ fontSize: 12 }}
+                />
+                <YAxis 
+                  tick={{ fontSize: 12 }}
+                  tickFormatter={(value) => fmtZAR(value).replace('R ', '')}
+                />
+                <Tooltip 
+                  formatter={(value, name) => {
+                    if (name === 'margin_pct') return [`${Number(value).toFixed(2)}%`, 'Margin %'];
+                    return [fmtZAR(Number(value)), name.charAt(0).toUpperCase() + name.slice(1)];
+                  }}
+                  labelFormatter={(label) => `Period: ${label}`}
+                />
+                <Legend />
+                <Bar dataKey="revenue" name="Revenue" fill="#00D4F5" />
+                <Bar dataKey="profit" name="Profit" fill="#2DD4A8" />
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartCard>
+          
+          <ChartCard title="Year-over-Year Performance" height={350}>
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={financialData.yearly_performance}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <XAxis 
+                  dataKey="year" 
+                  tick={{ fontSize: 12 }}
+                />
+                <YAxis 
+                  tick={{ fontSize: 12 }}
+                  tickFormatter={(value) => fmtZAR(value).replace('R ', '')}
+                />
+                <Tooltip 
+                  formatter={(value, name) => {
+                    if (name === 'margin_pct') return [`${Number(value).toFixed(2)}%`, 'Margin %'];
+                    return [fmtZAR(Number(value)), name.charAt(0).toUpperCase() + name.slice(1)];
+                  }}
+                />
+                <Legend />
+                <Line 
+                  type="monotone" 
+                  dataKey="revenue" 
+                  name="Revenue" 
+                  stroke="#00D4F5" 
+                  strokeWidth={2}
+                  dot={{ r: 4 }}
+                  activeDot={{ r: 6 }}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="profit" 
+                  name="Profit" 
+                  stroke="#2DD4A8" 
+                  strokeWidth={2}
+                  dot={{ r: 4 }}
+                  activeDot={{ r: 6 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </ChartCard>
+        </div>
+      )}
+
+      {/* Customer Intelligence */}
+      {customerData && (
+        <ChartCard title="Top Customers Intelligence" height={350}>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-slate-200">
+              <thead>
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Customer</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">Revenue</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">Orders</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">Avg Order Value</th>
+                  <th className="px-4 py-3 text-center text-xs font-medium text-slate-500 uppercase tracking-wider">Segment</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200">
+                {customerData.customers.map((customer: any, idx: number) => (
+                  <tr key={idx} className="hover:bg-slate-50">
+                    <td className="px-4 py-3 text-sm font-medium text-slate-900">{customer.partner_name}</td>
+                    <td className="px-4 py-3 text-sm text-right text-slate-700">{fmtZAR(customer.total_revenue)}</td>
+                    <td className="px-4 py-3 text-sm text-right text-slate-700">{fmtNum(customer.order_frequency)}</td>
+                    <td className="px-4 py-3 text-sm text-right text-slate-700">{fmtZAR(customer.avg_order_value)}</td>
+                    <td className="px-4 py-3 text-sm text-center">
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                        customer.value_segment.includes('High') ? 'bg-green-100 text-green-800' :
+                        customer.value_segment.includes('Medium') ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-slate-100 text-slate-800'
+                      }`}>
+                        {customer.value_segment}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </ChartCard>
+      )}
+
+      {/* Product Performance */}
+      {productData && (
+        <ChartCard title="Top Products Performance" height={350}>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-slate-200">
+              <thead>
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Product</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">SKU</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">Revenue</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">Quantity Sold</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">Margin %</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">Profit</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200">
+                {productData.products.map((product: any, idx: number) => (
+                  <tr key={idx} className="hover:bg-slate-50">
+                    <td className="px-4 py-3 text-sm font-medium text-slate-900">{product.product_name}</td>
+                    <td className="px-4 py-3 text-sm text-slate-700">{product.product_sku}</td>
+                    <td className="px-4 py-3 text-sm text-right text-slate-700">{fmtZAR(product.revenue)}</td>
+                    <td className="px-4 py-3 text-sm text-right text-slate-700">{fmtNum(product.quantity_sold)}</td>
+                    <td className="px-4 py-3 text-sm text-right text-slate-700">{product.margin_pct}%</td>
+                    <td className="px-4 py-3 text-sm text-right text-slate-700">{fmtZAR(product.profit)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </ChartCard>
+      )}
     </div>
   );
 }

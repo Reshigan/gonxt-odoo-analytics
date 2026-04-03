@@ -109,10 +109,18 @@ export const exceptionsApi = {
 // ── Executive Visibility ──
 export const executiveApi = {
   dashboard: () => apiFetch<any>('/api/v1/executive/dashboard'),
+  financialPerformance: (p: { company_id?: number }) =>
+    apiFetch<any>(`/api/v1/executive/financial-performance${buildQuery(p)}`),
+  customerIntelligence: (p: { company_id?: number; limit?: number }) =>
+    apiFetch<any>(`/api/v1/executive/customer-intelligence${buildQuery(p)}`),
+  productPerformance: (p: { company_id?: number; limit?: number }) =>
+    apiFetch<any>(`/api/v1/executive/product-performance${buildQuery(p)}`),
   companies: () => apiFetch<any>('/api/v1/executive/companies'),
   teamPerformance: () => apiFetch<any>('/api/v1/executive/team-performance'),
   operationalDaily: () => apiFetch<any>('/api/v1/executive/operational/daily-summary'),
-  operationalExceptions: () => apiFetch<any>('/api/v1/executive/operational/exceptions'),
+  operationalExceptions: (p: { limit?: number; severity?: string; entity_type?: string }) =>
+    apiFetch<any>(`/api/v1/executive/operational/exceptions${buildQuery(p)}`),
+  operationalExceptionAnalysis: () => apiFetch<any>('/api/v1/executive/operational/exception-analysis'),
 };
 
 // ── Health ──
