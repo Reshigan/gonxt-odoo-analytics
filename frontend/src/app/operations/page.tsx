@@ -28,6 +28,7 @@ export default function OperationsDashboard() {
 
   const [dailyData, setDailyData] = useState<any>(null);
   const [exceptionData, setExceptionData] = useState<any>(null);
+  const [exceptionAnalysisData, setExceptionAnalysisData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,6 +44,10 @@ export default function OperationsDashboard() {
         // Fetch exceptions
         const exceptionResponse = await executiveApi.operationalExceptions();
         setExceptionData(exceptionResponse.data);
+        
+        // Fetch exception analysis
+        const exceptionAnalysisResponse = await executiveApi.operationalExceptionAnalysis();
+        setExceptionAnalysisData(exceptionAnalysisResponse.data);
       } catch (err: any) {
         setError(err.message || 'Failed to load operations dashboard data');
         console.error('Operations dashboard error:', err);
@@ -160,6 +165,73 @@ export default function OperationsDashboard() {
           emptyMessage="No active exceptions"
         />
       </ChartCard>
+
+      {/* Exception Analysis */}
+      {exceptionAnalysisData && (
+        <>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Exception Summary by Type */}
+            <ChartCard title="Exception Summary by Type" height={350}>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-slate-200">
+                  <thead>
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Exception</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Type</th>
+                      <th className="px-4 py-3 text-center text-xs font-medium text-slate-500 uppercase tracking-wider">Severity</th>
+                      <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">Count</th>
+                      <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">Impact</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200">
+                    {exceptionAnalysisData.summary.slice(0, 8).map((item: any, idx: number) => (
+                      <tr key={idx} className="hover:bg-slate-50">
+                        <td className="px-4 py-3 text-sm font-medium text-slate-900">{item.exception_name}</td>
+                        <td className="px-4 py-3 text-sm text-slate-700">{item.exception_type}</td>
+                        <td className="px-4 py-3 text-sm text-center">
+                          <SeverityBadge severity={item.severity} />
+                        </td>
+                        <td className="px-4 py-3 text-sm text-right text-slate-700">{item.count}</td>
+                        <td className="px-4 py-3 text-sm text-right text-slate-700">
+                          {item.total_financial_impact ? fmtZAR(item.total_financial_impact) : 'N/A'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </ChartCard>
+
+            {/* Exception Trend */}
+            <ChartCard title="Exception Trend (Last 30 Days)" height={350}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={exceptionAnalysisData.trend}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+                  <XAxis 
+                    dataKey="date" 
+                    tick={{ fontSize: 10 }}
+                    tickFormatter={(value) => new Date(value).toLocaleDateString('en-ZA', { day: '2-digit', month: 'short' })}
+                  />
+                  <YAxis 
+                    tick={{ fontSize: 12 }}
+                  />
+                  <Tooltip 
+                    formatter={(value, name) => {
+                      if (name === 'date') return [new Date(value).toLocaleDateString(), 'Date'];
+                      return [value, name.charAt(0).toUpperCase() + name.slice(1)];
+                    }}
+                    labelFormatter={(label) => `Date: ${new Date(label).toLocaleDateString()}`}
+                  />
+                  <Legend />
+                  <Bar dataKey="critical" name="Critical" fill="#F56565" />
+                  <Bar dataKey="warning" name="Warning" fill="#ED8936" />
+                  <Bar dataKey="info" name="Info" fill="#63B3ED" />
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+          </div>
+        </>
+      )}
 
       {/* Operations Intelligence */}
       <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
