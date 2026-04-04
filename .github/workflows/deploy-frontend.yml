@@ -1,0 +1,42 @@
+name: Deploy Frontend UI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  deploy_frontend:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+    
+    - name: Install Dependencies
+      run: |
+        npm ci
+        cd frontend && npm ci --legacy-peer-deps
+    
+    - name: Build Frontend
+      run: |
+        cd frontend && npm run build
+    
+    - name: Deploy to Cloudflare Pages
+      if: github.ref == 'refs/heads/main'
+      uses: cloudflare/pages-action@v1
+      with:
+        apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        projectName: gonxt-odoo-analytics-ui
+        directory: frontend/out
+        gitHubToken: ${{ secrets.GITHUB_TOKEN }}
