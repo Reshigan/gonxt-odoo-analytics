@@ -18,7 +18,7 @@ const app = new Hono<HonoEnv>();
 
 // ── CORS ──
 app.use('/*', cors({
-  origin: ['https://analytics.gonxt.tech', 'http://localhost:3000'],
+  origin: ['https://analytics.gonxt.tech', 'https://nxt.vantax.co.za', 'http://localhost:3000'],
   allowMethods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
   allowHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
