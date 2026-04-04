@@ -42,7 +42,7 @@ export default function OperationsDashboard() {
         setDailyData(dailyResponse.data);
         
         // Fetch exceptions
-        const exceptionResponse = await executiveApi.operationalExceptions();
+        const exceptionResponse = await executiveApi.operationalExceptions({});
         setExceptionData(exceptionResponse.data);
         
         // Fetch exception analysis
@@ -217,10 +217,10 @@ export default function OperationsDashboard() {
                   />
                   <Tooltip 
                     formatter={(value, name) => {
-                      if (name === 'date') return [new Date(value).toLocaleDateString(), 'Date'];
-                      return [value, name.charAt(0).toUpperCase() + name.slice(1)];
+                      if (name === 'date') return [String(value), 'Date'];
+                      return [String(value), String(name).charAt(0).toUpperCase() + String(name).slice(1)];
                     }}
-                    labelFormatter={(label) => `Date: ${new Date(label).toLocaleDateString()}`}
+                    labelFormatter={(label) => `Date: ${String(label)}`}
                   />
                   <Legend />
                   <Bar dataKey="critical" name="Critical" fill="#F56565" />

@@ -108,6 +108,15 @@ export default function SalesPage({ filters, onFiltersChange, companies }: Props
   const invoiced = Math.round(ordersCount * 0.15);
   const paid = Math.round(ordersCount * 0.1);
 
+  // Generate chart data properly
+  const chartData = MONTH_SHORT.map((m, i) => {
+    return {
+      month: m,
+      [filters.year]: salesData?.revenue || 0,
+      ...(filters.compare_year ? { [filters.compare_year]: salesData?.revenue_prior || 0 } : {}),
+    };
+  });
+
   return (
     <div className="flex flex-col gap-5">
       {selectedOrder && (

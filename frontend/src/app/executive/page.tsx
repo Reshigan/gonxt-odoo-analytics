@@ -300,7 +300,7 @@ export default function ExecutiveDashboard() {
                 <Tooltip 
                   formatter={(value, name) => {
                     if (name === 'margin_pct') return [`${Number(value).toFixed(2)}%`, 'Margin %'];
-                    return [fmtZAR(Number(value)), name.charAt(0).toUpperCase() + name.slice(1)];
+                    return [fmtZAR(Number(value)), String(name).charAt(0).toUpperCase() + String(name).slice(1)];
                   }}
                   labelFormatter={(label) => `Period: ${label}`}
                 />
@@ -326,7 +326,7 @@ export default function ExecutiveDashboard() {
                 <Tooltip 
                   formatter={(value, name) => {
                     if (name === 'margin_pct') return [`${Number(value).toFixed(2)}%`, 'Margin %'];
-                    return [fmtZAR(Number(value)), name.charAt(0).toUpperCase() + name.slice(1)];
+                    return [fmtZAR(Number(value)), String(name).charAt(0).toUpperCase() + String(name).slice(1)];
                   }}
                 />
                 <Legend />
