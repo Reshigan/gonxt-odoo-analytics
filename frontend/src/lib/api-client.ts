@@ -2,7 +2,7 @@
 // GONXT Odoo 18 Analytics — Frontend API Client
 // ═══════════════════════════════════════════════════════════════
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://analytics-api.gonxt.tech';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://nxt.vantax.co.za';
 
 interface ApiResponse<T> {
   success: boolean;
