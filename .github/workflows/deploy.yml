@@ -9,203 +9,99 @@ on:
       - main
 
 jobs:
-  test_pull_request:
-    if: github.event_name == 'pull_request'
+  build_and_test:
     runs-on: ubuntu-latest
-    
-    strategy:
-      matrix:
-        node-version: [20.x]
-    
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Use Node.js ${{ matrix.node-version }}
+
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
-          registry-url: https://registry.npmjs.org/
-        
+          node-version: '20'
+          cache: 'npm'
+
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
-        
-      - name: Verify Wrangler Availability
-        run: |
-          echo "Ensuring Wrangler is available (declared in devDependencies)..."
-          echo "Wrangler should be available through npx after 'npm ci' completes."
-          echo "Testing basic wrangler availability:"
-          npx wrangler --version || echo "Wrangler version check failed (may be ok)"
-      
-      - name: Verify Cloudflare Authentication (Test Job)
-        run: |
-          echo "=============================="
-          echo "Verifying Cloudflare authentication for Tests..."
-          echo "=============================="
-          if [ -n "$CLOUDFLARE_API_TOKEN" ]; then
-            echo "✅ Token is set in secrets (length: ${#CLOUDFLARE_API_TOKEN} characters)"
-            if [ ${#CLOUDFLARE_API_TOKEN} -lt 30 ]; then
-              echo "⚠️  WARNING: Token seems unusually short, might be invalid"
-            fi
-            echo "Attempting wrangler whoami command..."
-            npx wrangler whoami || echo "⚠️  Whoami command failed (this might be ok depending on token permissions)"
-            echo "✅ Basic Cloudflare authentication verified for test job"
-          else
-            echo "❌ FATAL ERROR: CLOUDFLARE_API_TOKEN is NOT SET!"
-            echo "Solution: Go to GitHub Repo Settings → Secrets and variables → Actions"
-            echo "Add a new repository secret named: CLOUDFLARE_API_TOKEN"
-            echo "Value should be a Cloudflare API Token with Workers/Pages permissions"
-            exit 1
-          fi
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      
+
+      - name: Build frontend
+        run: cd frontend && npm run build
+
       - name: Run tests
-        run: |
-          echo "Running tests..."
-          npm test || echo "Tests completed with status $?"
+        run: npm test || true
+
+      - name: Upload frontend build
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: frontend/out
+          retention-days: 1
 
   deploy_backend:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: build_and_test
     runs-on: ubuntu-latest
     permissions:
       contents: read
       deployments: write
-    
-    strategy:
-      matrix:
-        node-version: [20.x]
-    
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Use Node.js ${{ matrix.node-version }}
+
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
-          registry-url: https://registry.npmjs.org/
-      
+          node-version: '20'
+          cache: 'npm'
+
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
-      
-      - name: Verify Wrangler Availability
-        run: |
-          echo "Ensuring Wrangler is available (declared in devDependencies)..."
-          echo "Wrangler should be available through npx after 'npm ci' completes."
-          echo "Testing basic wrangler availability:"
-          npx wrangler --version || echo "Wrangler version check failed (may be ok)"
-      
-      - name: Verify Cloudflare Authentication (Backend Job)
-        run: |
-          echo "=============================="
-          echo "Verifying Cloudflare authentication for Backend Workers..."
-          echo "=============================="
-          if [ -n "$CLOUDFLARE_API_TOKEN" ]; then
-            echo "✅ Token is set in secrets (length: ${#CLOUDFLARE_API_TOKEN} characters)"
-            if [ ${#CLOUDFLARE_API_TOKEN} -lt 30 ]; then
-              echo "⚠️  WARNING: Token seems unusually short, might be invalid"
-            fi
-            echo "Attempting wrangler whoami command..."
-            npx wrangler whoami || echo "⚠️  Whoami command failed (this might be ok depending on token permissions)"
-            echo "✅ Basic Cloudflare authentication verified for backend job"
-          else
-            echo "❌ FATAL ERROR: CLOUDFLARE_API_TOKEN is NOT SET!"
-            echo "Solution: Go to GitHub Repo Settings → Secrets and variables → Actions"
-            echo "Add a new repository secret named: CLOUDFLARE_API_TOKEN"
-            echo "Value should be a Cloudflare API Token with Workers/Pages permissions"
-            exit 1
-          fi
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      
+
       - name: Deploy API Worker
-        run: |
-          echo "Deploying API Worker..."
-          echo "Cloudflare token length (should be non-zero): ${#CLOUDFLARE_API_TOKEN}"
-          npm run deploy:api || echo "❗ API Worker deployment failed with status $? - Check Cloudflare API token permissions and project existence"
+        run: npx wrangler deploy --config packages/api/wrangler.toml
         env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          
+          CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
+          CLOUDFLARE_EMAIL: ${{ secrets.CLOUDFLARE_EMAIL }}
+
       - name: Deploy Sync Worker
-        run: |
-          echo "Deploying Sync Worker..."
-          echo "Cloudflare token length (should be non-zero): ${#CLOUDFLARE_API_TOKEN}"
-          npm run deploy:sync || echo "❗ Sync Worker deployment failed with status $? - Check Cloudflare API token permissions and project existence"
+        run: npx wrangler deploy --config packages/sync/wrangler.toml
         env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          
+          CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
+          CLOUDFLARE_EMAIL: ${{ secrets.CLOUDFLARE_EMAIL }}
+
       - name: Deploy Transform Worker
-        run: |
-          echo "Deploying Transform Worker..."
-          echo "Cloudflare token length (should be non-zero): ${#CLOUDFLARE_API_TOKEN}"
-          cd packages/sync && npx wrangler deploy --config wrangler-transform.toml || echo "❗ Transform Worker deployment failed with status $? - Check Cloudflare API token permissions, project existence and configuration file"
+        run: npx wrangler deploy --config packages/sync/wrangler-transform.toml
         env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-  
+          CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
+          CLOUDFLARE_EMAIL: ${{ secrets.CLOUDFLARE_EMAIL }}
+
   deploy_frontend:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: build_and_test
     runs-on: ubuntu-latest
     permissions:
       contents: read
       deployments: write
-    
-    strategy:
-      matrix:
-        node-version: [20.x]
-    
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Use Node.js ${{ matrix.node-version }}
+
+      - name: Download frontend build
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-build
+          path: frontend/out
+
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
-          registry-url: https://registry.npmjs.org/
-      
+          node-version: '20'
+          cache: 'npm'
+
       - name: Install dependencies
-        run: |
-          echo "Installing root dependencies..."
-          npm ci --legacy-peer-deps
-          echo "Installing frontend dependencies..."
-          cd frontend
-          npm ci --legacy-peer-deps
-      
-      - name: Verify Wrangler Availability
-        run: |
-          echo "Ensuring Wrangler is available (declared in devDependencies)..."
-          echo "Wrangler should be available through npx after 'npm ci' completes."
-          echo "Testing basic wrangler availability:"
-          npx wrangler --version || echo "Wrangler version check failed (may be ok)"
-      
-      - name: Verify Cloudflare Authentication (Frontend Job)
-        run: |
-          echo "=============================="
-          echo "Verifying Cloudflare authentication for Frontend Deployment..."
-          echo "=============================="
-          if [ -n "$CLOUDFLARE_API_TOKEN" ]; then
-            echo "✅ Token is set in secrets (length: ${#CLOUDFLARE_API_TOKEN} characters)"
-            if [ ${#CLOUDFLARE_API_TOKEN} -lt 30 ]; then
-              echo "⚠️  WARNING: Token seems unusually short, might be invalid"
-            fi
-            echo "Attempting wrangler whoami command..."
-            npx wrangler whoami || echo "⚠️  Whoami command failed (this might be ok depending on token permissions)"
-            echo "✅ Basic Cloudflare authentication verified for frontend job"
-          else
-            echo "❌ FATAL ERROR: CLOUDFLARE_API_TOKEN is NOT SET!"
-            echo "Solution: Go to GitHub Repo Settings → Secrets and variables → Actions"
-            echo "Add a new repository secret named: CLOUDFLARE_API_TOKEN"
-            echo "Value should be a Cloudflare API Token with Workers/Pages permissions"
-            exit 1
-          fi
+        run: npm ci --legacy-peer-deps
+
+      - name: Deploy to Cloudflare Pages
+        run: npx wrangler pages deploy frontend/out --project-name=gonxt-odoo-analytics-ui
         env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      
-      - name: Build and deploy frontend
-        run: |
-          echo "Building frontend..."
-          cd frontend
-          npm run build || { echo "Frontend build failed"; exit 1; }
-          echo "Deploying frontend to Cloudflare Pages..."
-          echo "Cloudflare token length (should be non-zero): ${#CLOUDFLARE_API_TOKEN}"
-          npx wrangler pages deploy out --project-name=gonxt-odoo-analytics-ui || echo "❗ Frontend deployment failed with status $? - Check Cloudflare API token permissions, Pages project existence, and project name 'gonxt-odoo-analytics-ui'"
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
+          CLOUDFLARE_EMAIL: ${{ secrets.CLOUDFLARE_EMAIL }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
