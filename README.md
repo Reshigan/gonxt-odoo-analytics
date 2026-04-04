@@ -90,9 +90,13 @@ cd packages/api && wrangler deploy
 cd ../sync && wrangler deploy
 wrangler deploy --config wrangler-transform.toml
 
-# Frontend
+# Frontend (Manual Deployment)
 cd ../../frontend && npm run build
 wrangler pages deploy out --project-name=gonxt-odoo-analytics-ui
+
+# Frontend (Automated Deployment)
+# GitHub Actions will automatically deploy the frontend on pushes to main branch
+# Set up secrets in GitHub: CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID
 ```
 
 ### 9. DNS
@@ -137,6 +141,9 @@ gonxt-odoo-analytics/
 - **Full Stock Visibility**: On-hand, reserved, available, incoming, reorder point, ageing, warehouse breakdown
 - **Exception Engine**: 10 auto-detected exception types (EX-SO-001 to EX-ST-005) with severity classification
 - **Actuals vs Exceptions**: Transactions classified as Complete, In Progress, Warning, Critical, or Resolved
+- **Enhanced Executive Reporting**: Financial performance analysis, customer intelligence, product analytics
+- **Operations Analytics**: Exception analysis with trends and filtering capabilities
+- **Sales Intelligence**: Real-time sales data with KPIs and order management
 
 ## OpenHands Build Phases
 | Phase | Scope |
