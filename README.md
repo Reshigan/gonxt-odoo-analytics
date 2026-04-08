@@ -100,6 +100,12 @@ wrangler pages deploy out --project-name=gonxt-odoo-analytics-ui
 ```
 
 ### 9. DNS
+Add to your Cloudflare zone:
+- For custom domain like `nxt.vantax.co.za`:
+  - Create a CNAME record pointing to `gonxt-odoo-analytics-ui.pages.dev` (or use Cloudflare Pages Custom Domains feature)
+  - Or configure Cloudflare Pages to use your custom domain directly
+  
+Existing configuration:
 Add to gonxt.tech Cloudflare zone:
 - `analytics.gonxt.tech` → CNAME → `gonxt-odoo-analytics-ui.pages.dev` (proxied)
 - `analytics-api.gonxt.tech` → Worker route

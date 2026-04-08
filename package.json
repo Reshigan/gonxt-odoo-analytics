@@ -13,7 +13,7 @@
     "dev:frontend": "cd frontend && next dev",
     "deploy:api": "cd packages/api && wrangler deploy",
     "deploy:sync": "cd packages/sync && wrangler deploy",
-    "deploy:frontend": "cd frontend && npm run build && wrangler pages deploy out --project-name=gonxt-odoo-analytics-ui",
+    "deploy:frontend": "cd frontend && npm run build && wrangler pages deploy",
     "db:migrate": "node scripts/migrate.js",
     "db:seed": "node scripts/seed.js",
     "test:odoo": "npx tsx scripts/test-odoo-connection.ts",

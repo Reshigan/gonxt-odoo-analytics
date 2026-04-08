@@ -1,0 +1,12 @@
+#:schema https://jc-verse.github.io/wrangler-json-schema/latest/schema.json
+name = "gonxt-odoo-analytics-ui"
+compatibility_date = "2024-06-01"
+pages_build_output_dir = "./out"
+
+[vars]
+# Empty vars section - all config comes from env vars during build
+
+# Production environment
+[env.production]
+# Custom domain configuration will be handled via Cloudflare dashboard
+# or using wrangler pages deployment flags

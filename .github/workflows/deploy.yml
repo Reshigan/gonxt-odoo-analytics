@@ -103,7 +103,9 @@ jobs:
         run: npm ci --legacy-peer-deps
 
       - name: Deploy to Cloudflare Pages
-        run: npx wrangler pages deploy frontend/out --project-name=gonxt-odoo-analytics-ui --branch=main
+        run: |
+          cd frontend
+          npx wrangler pages deploy
         env:
           CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
           CLOUDFLARE_EMAIL: ${{ secrets.CLOUDFLARE_EMAIL }}
