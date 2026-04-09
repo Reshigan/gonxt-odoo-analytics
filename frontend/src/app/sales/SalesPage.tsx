@@ -203,6 +203,8 @@ export default function SalesPage({ filters, onFiltersChange, companies }: Props
           ]}
           data={orderData?.results || []}
           onRowClick={setSelectedOrder}
+          enableExport={true}
+          tableName="sales-orders"
         />
       </div>
     </div>

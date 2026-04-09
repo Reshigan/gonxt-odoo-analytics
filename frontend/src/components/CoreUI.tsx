@@ -142,9 +142,11 @@ interface DataTableProps {
   data: any[];
   onRowClick?: (row: any) => void;
   emptyMessage?: string;
+  enableExport?: boolean;
+  tableName?: string;
 }
 
-export function DataTable({ columns, data, onRowClick, emptyMessage = 'No data found' }: DataTableProps) {
+export function DataTable({ columns, data, onRowClick, emptyMessage = 'No data found', enableExport = false, tableName = 'data' }: DataTableProps) {
   const [sortCol, setSortCol] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
 
@@ -162,6 +164,40 @@ export function DataTable({ columns, data, onRowClick, emptyMessage = 'No data f
     else { setSortCol(col); setSortDir('asc'); }
   }
 
+  // Export to CSV function
+  const exportToCSV = () => {
+    if (data.length === 0) return;
+    
+    // Create CSV header
+    const headers = columns.map(col => `"${col.label}"`).join(',');
+    
+    // Create CSV rows
+    const csvRows = data.map(row => {
+      return columns.map(col => {
+        const value = col.render ? 
+          // For rendered content, extract text (this is a simplified approach)
+          (typeof col.render(row[col.key], row) === 'string' ? 
+            `"${col.render(row[col.key], row)}"` : 
+            `"${row[col.key] ?? ''}"`) : 
+          `"${row[col.key] ?? ''}"`;
+        return value;
+      }).join(',');
+    });
+    
+    const csvContent = [headers, ...csvRows].join('\n');
+    
+    // Create download link
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${tableName}_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   if (data.length === 0) {
     return (
       <div className="flex items-center justify-center py-12 text-sm text-slate-400">
@@ -172,6 +208,20 @@ export function DataTable({ columns, data, onRowClick, emptyMessage = 'No data f
 
   return (
     <div className="overflow-x-auto">
+      {enableExport && (
+        <div className="mb-3 flex justify-end">
+          <button
+            onClick={exportToCSV}
+            className="inline-flex items-center px-3 py-1.5 border border-slate-300 rounded-md text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500"
+            aria-label="Export data to CSV"
+          >
+            <svg className="mr-1.5 h-3.5 w-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h3.5" />
+            </svg>
+            Export CSV
+          </button>
+        </div>
+      )}
       <table className="w-full text-sm">
         <thead>
           <tr>

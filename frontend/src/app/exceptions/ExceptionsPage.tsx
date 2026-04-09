@@ -91,6 +91,8 @@ export default function ExceptionsPage({ filters, onFiltersChange, companies }: 
           ]}
           data={exceptions}
           emptyMessage="No exceptions matching filters"
+          enableExport={true}
+          tableName="exceptions"
         />
       </div>
     </div>

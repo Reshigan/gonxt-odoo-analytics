@@ -209,6 +209,8 @@ export default function StockPage({ filters, onFiltersChange, companies }: Props
             { key: 'status', label: 'Status', render: (v: string) => <StockBadge status={v} /> },
           ]}
           data={stock}
+          enableExport={true}
+          tableName="inventory"
         />
       </div>
     </div>

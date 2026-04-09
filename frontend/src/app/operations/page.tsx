@@ -163,6 +163,8 @@ export default function OperationsDashboard() {
           columns={exceptionColumns}
           data={exceptionData?.exceptions || []}
           emptyMessage="No active exceptions"
+          enableExport={true}
+          tableName="active-exceptions"
         />
       </ChartCard>
 
